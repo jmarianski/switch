@@ -68,3 +68,22 @@ button.icon.selected {
   background-color: rgb(252, 252, 252);
   border-radius: 100%;
 }
+
+.main-screen.showing-application {
+  position: relative;
+  display: block;
+  background-color: white;
+}
+
+.main-screen webview.visible {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.main-screen webview.hidden {
+  opacity: 0;
+  pointer-events: none;
+}

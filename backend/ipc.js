@@ -18,12 +18,12 @@ class IpcApi {
     ipcMain.handle(API.ENV.APP.ADD, (e, ...args) =>
       this.addApplication.call(this, ...args),
     );
-    ipcMain.handle(API.ENV.APP.SHOW, (e, ...args) =>
-      this.showApplication.call(this, ...args),
-    );
-    ipcMain.handle(API.ENV.APP.HIDE_CURRENT, (e, ...args) =>
-      this.hideCurrentApplication.call(this, ...args),
-    );
+    // ipcMain.handle(API.ENV.APP.SHOW, (e, ...args) =>
+    //   this.showApplication.call(this, ...args),
+    // );
+    // ipcMain.handle(API.ENV.APP.HIDE_CURRENT, (e, ...args) =>
+    //   this.hideCurrentApplication.call(this, ...args),
+    // );
     ipcMain.handle(API.ENV.APP.REMOVE, (e, ...args) =>
       this.removeApplication.call(this, ...args),
     );
