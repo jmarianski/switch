@@ -1,30 +1,19 @@
 // Modules to control application life and create native browser window
 const { IpcApi } = require("./ipc");
-const { app, BrowserWindow, BrowserView, session } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  BrowserView,
+  session,
+  desktopCapturer,
+} = require("electron");
 const path = require("path");
 const IpcApiObj = new IpcApi();
-app.commandLine.appendSwitch("ignore-gpu-blocklist", "enabled");
-app.commandLine.appendSwitch("enable-pwa-full-code-cache", "enabled");
-app.commandLine.appendSwitch("enable-desktop-pwas", "enabled");
-app.commandLine.appendSwitch("enable-desktop-pwas-link-capturing", "enabled");
-app.commandLine.appendSwitch("enable-webrtc-srtp-aes-gcm", "enabled");
-app.commandLine.appendSwitch("enable-webrtc-srtp-encrypted-headers", "enabled");
-app.commandLine.appendSwitch("enable-webrtc-stun-origin", "enabled");
-app.commandLine.appendSwitch("WebRtcUseEchoCanceller3", "enabled");
-app.commandLine.appendSwitch(
-  "enable-webrtc-new-encode-cpu-load-estimator",
-  "enabled",
-);
-app.commandLine.appendSwitch(
-  "enabble-webrtc-h264-with-openh264-ffmpeg",
-  "enabled",
-);
-app.commandLine.appendSwitch("enable-parallel-downloading", "enabled");
 
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
+    width: 1200,
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -44,6 +33,17 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
+  desktopCapturer
+    .getSources({ types: ["window", "screen"] })
+    .then(async (sources) => {
+      console.log(sources);
+      for (const source of sources) {
+        if (source.name === "Electron") {
+          mainWindow.webContents.send("SET_SOURCE", source.id);
+          return;
+        }
+      }
+    });
 
   app.on("activate", function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

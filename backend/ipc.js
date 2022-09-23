@@ -1,4 +1,4 @@
-const { ipcMain, BrowserView, session } = require("electron");
+const { ipcMain, BrowserView, session, BrowserWindow } = require("electron");
 const { API } = require("./api");
 const { EnvironmentManager } = require("./manageEnvironment");
 
@@ -66,26 +66,27 @@ class IpcApi {
     if (!app.view) {
       const persist = "persist:" + envId;
       const sess = session.fromPartition(persist);
-      sess.setUserAgent(
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-      );
-      const view = new BrowserView({
+      let agent = null;
+      if (app.url.indexOf("teams.microsoft") !== -1) {
+        console.log("teams, switch agents");
+        agent =
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
+      }
+      const view = new BrowserWindow({
         webPreferences: {
           session: sess,
-          allowRunningInsecureContent: true,
-          experimentalFeatures: true,
-          contextIsolation: false,
           nodeIntegration: true,
-          nodeIntegrationInWorker: true,
         },
       });
       view.setBounds({
         x: 100,
         y: 0,
         width: this.mainWindow.getBounds().width - 100,
-        height: this.mainWindow.getBounds().height,
+        height: this.mainWindow.getBounds().height - 25,
       });
-      view.webContents.loadURL(app.url);
+      view.webContents.loadURL(app.url, {
+        userAgent: agent,
+      });
       view.setAutoResize({
         width: true,
         height: true,
