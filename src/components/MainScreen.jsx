@@ -38,8 +38,8 @@ export const MainScreen = ({
 
   const idMatch = (application1, application2) => {
     return (
-      application1.id === application2.id &&
-      application1.envId === application2.envId
+      application1?.id === application2?.id &&
+      application1?.envId === application2?.envId
     );
   };
 

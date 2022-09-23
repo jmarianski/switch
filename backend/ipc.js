@@ -18,12 +18,6 @@ class IpcApi {
     ipcMain.handle(API.ENV.APP.ADD, (e, ...args) =>
       this.addApplication.call(this, ...args),
     );
-    // ipcMain.handle(API.ENV.APP.SHOW, (e, ...args) =>
-    //   this.showApplication.call(this, ...args),
-    // );
-    // ipcMain.handle(API.ENV.APP.HIDE_CURRENT, (e, ...args) =>
-    //   this.hideCurrentApplication.call(this, ...args),
-    // );
     ipcMain.handle(API.ENV.APP.REMOVE, (e, ...args) =>
       this.removeApplication.call(this, ...args),
     );
@@ -42,11 +36,9 @@ class IpcApi {
     return this.environmentManager.addNewEnvironment(name);
   }
   removeEnvironment({ id }) {
-    // TODO: clear opened windows
     return this.environmentManager.removeEnvironment(id);
   }
   removeApplication({ envId, id }) {
-    // TODO: clear opened windows
     return this.environmentManager.removeApplication(envId, id);
   }
   addApplication({ envId, name, url }) {
@@ -57,6 +49,7 @@ class IpcApi {
     });
     return app;
   }
+  // TODO: remove? might be obsolete, though popups?
   showApplication({ envId, id }) {
     this.hideCurrentApplication();
     const app =

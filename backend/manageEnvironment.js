@@ -12,7 +12,6 @@ function id(length) {
 }
 
 function icon(id) {
-  console.log("test", id);
   var options = {
     foreground: [0, 0, 0, 255],
     background: [255, 255, 255, 255],
@@ -40,7 +39,6 @@ class EnvironmentManager {
   getFromStore() {
     const envs = this.store.get("environments", []);
     const result = [];
-    console.log(envs);
     envs.forEach((config) => {
       result.push(new Environment(config));
     });
@@ -93,7 +91,7 @@ class EnvironmentManager {
   }
 
   removeApplication(envId, id) {
-    const environment = this.environments.filter((env) => env.id === envId);
+    const environment = this.getEnvironments().find((env) => env.id === envId);
     environment.applications = [
       ...environment?.applications.filter((app) => app.id !== id),
     ];
@@ -122,14 +120,16 @@ class Environment {
     this.name = config.name || "EMPTY";
     this.icon = config.icon || icon(this.id);
     this.applications = this.parseApplicationsFromConfig(
+      this.id,
       Array.isArray(config.applications) ? config.applications : [],
     );
   }
 
-  parseApplicationsFromConfig(applications) {
+  parseApplicationsFromConfig(envId, applications) {
     const result = [];
     applications = applications || [];
     applications.forEach((app) => {
+      app.envId = envId;
       result.push(new Application(app));
     });
 

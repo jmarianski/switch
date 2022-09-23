@@ -16,11 +16,7 @@ function createWindow() {
       contextIsolation: true,
     },
   });
-  console.log(process?.env?.NODE_ENV);
-  if (
-    process?.env?.NODE_ENV !== "production" &&
-    process?.env?.NODE_ENV !== undefined
-  ) {
+  if (!app.isPackaged) {
     mainWindow.loadURL("http://localhost:3000", {});
   } else {
     mainWindow.loadFile("build/index.html");
@@ -30,18 +26,6 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
-  console.log(process?.env?.NODE_ENV);
-  // desktopCapturer
-  //   .getSources({ types: ["window", "screen"] })
-  //   .then(async (sources) => {
-  //     console.log(sources);
-  //     for (const source of sources) {
-  //       if (source.name === "Electron") {
-  //         mainWindow.webContents.send("SET_SOURCE", source.id);
-  //         return;
-  //       }
-  //     }
-  //   });
 
   app.on("activate", function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

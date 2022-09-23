@@ -74,7 +74,7 @@ function App() {
     );
   };
   const onRemoveApplication = (app) => {
-    removeApplication({ id: app.id });
+    removeApplication(app);
     // TODO: kill window
     setEnvironments(
       environments.map((env) =>
