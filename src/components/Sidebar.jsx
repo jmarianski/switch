@@ -1,59 +1,35 @@
-import { useState } from "react";
-
-const List = ({ items, addFunction, selectFunction, onDelete }) => {
-  const [selectedItem, setSelectedItem] = useState(null);
+import { cls } from "../util";
+const Icon = ({ item, onClick, onDelete }) => {
+  const { id, icon, name } = item;
   const onSelect = (e) => {
-    const item = items.find((i) => i.id === e.target.getAttribute("data-id"));
-    if (item) {
-      setSelectedItem(item);
-      selectFunction(item);
-    }
+    onClick(item);
   };
-
-  const onClickDelete = (e) => {
-    const item = items.find((i) => i.id === e.target.getAttribute("data-id"));
-    if (item) {
-      onDelete(item);
-    }
+  const onClickDelete = () => {
+    onDelete(item);
   };
-
   return (
-    <>
-      {items &&
-        items.map((item) => {
-          return (
-            <div className="icon-container">
-              <button
-                className={
-                  "icon" + (selectedItem?.id === item.id ? " selected" : "")
-                }
-                data-id={item.id}
-                onClick={onSelect}
-                style={{
-                  backgroundImage: `url(${item.icon})`,
-                }}
-              />
-              <span class="label">{item.name}</span>
-              <button
-                data-id={item.id}
-                className="delete"
-                onClick={onClickDelete}
-              >
-                x
-              </button>
-            </div>
-          );
+    <div className="icon-container">
+      <button
+        className={cls({
+          icon: true,
+          selected: !!item?.focused,
+          notification: !!item?.notification,
         })}
-      <button className="icon" onClick={addFunction}>
-        +
+        data-id={id}
+        onClick={onSelect}
+        style={{
+          backgroundImage: `url(${icon})`,
+        }}
+      />
+      <button data-id={item.id} className="delete" onClick={onClickDelete}>
+        x
       </button>
-    </>
+    </div>
   );
 };
 
 function Sidebar({
   environments,
-  selectedEnvironment,
   onAddEnvironment,
   onAddApplication,
   onSelectEnvironment,
@@ -61,28 +37,37 @@ function Sidebar({
   onRemoveEnvironment,
   onRemoveApplication,
 }) {
-  const onAddApplicationForCurrentEnvironment = () => {
-    onAddApplication();
-  };
   return (
     <div className="sidebar">
-      <div className="environments">
-        <List
-          items={environments}
-          addFunction={onAddEnvironment}
-          selectFunction={onSelectEnvironment}
-          onDelete={onRemoveEnvironment}
-        />
-      </div>
-      <div className="applications">
-        {selectedEnvironment && (
-          <List
-            items={selectedEnvironment?.applications}
-            addFunction={onAddApplicationForCurrentEnvironment}
-            selectFunction={onSelectApplication}
-            onDelete={onRemoveApplication}
-          />
-        )}
+      {environments.map((env, i) => {
+        return (
+          <div className="environment" key={i}>
+            <Icon
+              item={env}
+              onClick={onSelectEnvironment}
+              onDelete={onRemoveEnvironment}
+            />
+            {env.applications.map((app, j) => {
+              return (
+                <div className="application" key={j}>
+                  <Icon
+                    item={app}
+                    onClick={onSelectApplication}
+                    onDelete={onRemoveApplication}
+                  />
+                </div>
+              );
+            })}
+            <button className="icon" onClick={() => onAddApplication(env)}>
+              +
+            </button>
+          </div>
+        );
+      })}
+      <div>
+        <button className="icon" onClick={onAddEnvironment}>
+          +
+        </button>
       </div>
     </div>
   );

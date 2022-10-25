@@ -10,6 +10,8 @@ const API = {
       HIDE_CURRENT: "env:app:hide:current",
     },
   },
+  OPEN_EXTERNAL: "open-external",
+  BACKGROUND_THROTTLE: "background-throttle",
 };
 
 module.exports = {

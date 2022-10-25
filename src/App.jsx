@@ -2,7 +2,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import Sidebar from "./components/Sidebar";
 import { useEffect, useState } from "react";
-import { getEnvironments, removeApplication, removeEnvironment } from "./util";
+import { getEnvironments, removeApplication, removeEnvironment } from "./comm";
 import { MainScreen } from "./components/MainScreen";
 
 function App() {
@@ -38,8 +38,6 @@ function App() {
     }
   }, [showingApplication]);
 
-  console.log(environment, application);
-
   const onSelectApplication = (app) => {
     setApplication(app);
     setShowingApplication(true);
@@ -51,7 +49,6 @@ function App() {
   };
 
   const onAddedApplication = (item) => {
-    console.log(item);
     setAddingApplication(false);
     setEnvironments(
       environments.map((el) =>
@@ -88,6 +85,30 @@ function App() {
     );
   };
 
+  const updateApplication = (envId, appId, callback) => {
+    setEnvironments((envs) =>
+      envs.map((env) =>
+        env.id !== envId
+          ? env
+          : {
+              ...env,
+              applications: env.applications.map((app) =>
+                app.id !== appId ? app : callback(app),
+              ),
+            },
+      ),
+    );
+  };
+
+  const updateAllApplications = (callback) => {
+    setEnvironments((envs) =>
+      envs.map((env) => ({
+        ...env,
+        applications: env.applications.map(callback),
+      })),
+    );
+  };
+
   useEffect(() => {
     (async () => {
       const envs = await getEnvironments();
@@ -99,7 +120,6 @@ function App() {
     <div className="App">
       <Sidebar
         environments={environments}
-        selectedEnvironment={selectedEnvironment}
         onAddEnvironment={() => setAddingEnvironment(true)}
         onAddApplication={() => setAddingApplication(true)}
         onRemoveEnvironment={onRemoveEnvironment}
@@ -112,7 +132,11 @@ function App() {
         addingApplication={addingApplication}
         onAddedEnvironment={onAddedEnvironment}
         onAddedApplication={onAddedApplication}
+        updateApplication={updateApplication}
+        updateAllApplications={updateAllApplications}
+        environments={environments}
         application={application}
+        onSelectApplication={onSelectApplication}
         selectedEnvironment={selectedEnvironment}
         showingApplication={showingApplication}
       />

@@ -1,6 +1,11 @@
 // Modules to control application life and create native browser window
 const { IpcApi } = require("./ipc");
-const { app, BrowserWindow, desktopCapturer } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  desktopCapturer,
+  webFrameMain,
+} = require("electron");
 const path = require("path");
 const IpcApiObj = new IpcApi();
 
@@ -21,6 +26,7 @@ function createWindow() {
   } else {
     mainWindow.loadFile("build/index.html");
   }
+
   IpcApiObj.setMainWindow(mainWindow);
 }
 
@@ -34,4 +40,37 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") app.quit();
+});
+
+app.on("web-contents-created", function (webContentsCreatedEvent, contents) {
+  contents.on(
+    "did-frame-navigate",
+    (
+      event,
+      url,
+      httpResponsCode,
+      httpStatusText,
+      isMainFrame,
+      frameProcessId,
+      frameRoutingId,
+    ) => {
+      const frame = webFrameMain.fromId(frameProcessId, frameRoutingId);
+      console.log(
+        event,
+        url,
+        httpResponsCode,
+        httpStatusText,
+        isMainFrame,
+        frameProcessId,
+        frameRoutingId,
+      );
+    },
+  );
+  contents.setMaxListeners(1000);
+
+  if (contents.getType() === "webview") {
+    contents.setWindowOpenHandler(function (details) {
+      return { action: "allow" };
+    });
+  }
 });

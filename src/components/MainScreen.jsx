@@ -1,17 +1,25 @@
 import { useForm } from "react-hook-form";
-import { addApplication, addEnvironment } from "../util";
-import { useEffect, useState } from "react";
+import { addApplication, addEnvironment, backgroundThrottle } from "../comm";
+import { useEffect, useState, useRef } from "react";
+import { registerHandlers } from "../eventHandlers";
 
 export const MainScreen = ({
+  environments,
+  application,
   addingEnvironment,
   addingApplication,
   onAddedEnvironment,
   onAddedApplication,
-  application,
+  updateApplication,
+  updateAllApplications,
   selectedEnvironment,
   showingApplication,
+  onSelectApplication,
 }) => {
+  const recentlyAddedRef = useRef();
   const [webviews, setWebviews] = useState([]);
+  const [webviewRefs, setWebviewRefs] = useState([]);
+  const [recentlyAdded, setRecentlyAdded] = useState(null);
   const [currentWebview, setCurrentWebview] = useState(null);
   let Comp;
   switch (true) {
@@ -36,6 +44,10 @@ export const MainScreen = ({
     return !!webviews.find((wv) => idMatch(application, wv));
   };
 
+  const getWebviewRef = (app) => {
+    return webviewRefs.find((wv) => idMatch(app, wv))?.webview;
+  };
+
   const idMatch = (application1, application2) => {
     return (
       application1?.id === application2?.id &&
@@ -43,17 +55,56 @@ export const MainScreen = ({
     );
   };
 
-  console.log(webviews);
-
   const showApplication = (application) => {
     if (!existsWebview(application)) {
       setWebviews([...webviews, application]);
+      setRecentlyAdded(application);
     }
+    webviewRefs.forEach((webview) => {
+      if (idMatch(webview, application)) {
+        console.log("try not throttle", webview.ref.getWebContentsId());
+        backgroundThrottle(webview.ref.getWebContentsId(), false);
+      } else {
+        console.log("try throttle", webview.ref.getWebContentsId());
+        backgroundThrottle(webview.ref.getWebContentsId(), true);
+      }
+    });
+    updateAllApplications((app) => {
+      app.focused = false;
+      const { ref } = getWebviewRef(app) || {};
+      if (ref) {
+      }
+      return app;
+    });
+    updateApplication(application.envId, application.id, (app) => {
+      app.focused = true;
+      app.notification = false;
+      return app;
+    });
     setCurrentWebview(application);
   };
 
   useEffect(() => {
-    console.log(showingApplication, application);
+    if (recentlyAddedRef && recentlyAddedRef.current) {
+      setWebviewRefs([
+        ...webviewRefs,
+        {
+          id: recentlyAdded.id,
+          envId: recentlyAdded.envId,
+          ref: recentlyAddedRef.current,
+        },
+      ]);
+      registerHandlers(
+        recentlyAddedRef.current,
+        recentlyAdded,
+        updateApplication,
+        updateAllApplications,
+        onSelectApplication,
+      );
+    }
+  }, [recentlyAdded]);
+
+  useEffect(() => {
     if (!showingApplication || addingEnvironment || addingApplication) {
       setCurrentWebview(null);
       return;
@@ -73,6 +124,14 @@ export const MainScreen = ({
           <webview
             className={idMatch(wv, currentWebview) ? "visible" : "hidden"}
             key={i}
+            ref={idMatch(wv, recentlyAdded) ? recentlyAddedRef : null}
+            allowpopups="true"
+            preload={
+              "file://" + window.electron.dirname + "/preload-webview.js"
+            }
+            disablewebsecurity="true"
+            webpreferences={"nativeWindowOpen=true"}
+            nodeintegration="true"
             useragent={
               wv.url.indexOf("teams") !== -1
                 ? "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"

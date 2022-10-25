@@ -34,7 +34,10 @@
   },
   "nodemonConfig": {
     "kill": "2",
-    "watch": "./backend",
+    "watch": [
+      "./backend",
+      "./src"
+    ],
     "exec": "npm run electron || exit 2"
   },
   "eslintConfig": {

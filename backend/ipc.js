@@ -1,4 +1,10 @@
-const { ipcMain, BrowserView, session, BrowserWindow } = require("electron");
+const {
+  ipcMain,
+  webContents,
+  session,
+  BrowserWindow,
+  shell,
+} = require("electron");
 const { API } = require("./api");
 const { EnvironmentManager } = require("./manageEnvironment");
 
@@ -24,6 +30,12 @@ class IpcApi {
     ipcMain.handle(API.ENV.REMOVE, (e, ...args) =>
       this.removeEnvironment.call(this, ...args),
     );
+    ipcMain.handle(API.OPEN_EXTERNAL, (e, ...args) =>
+      this.openExternal.call(this, ...args),
+    );
+    ipcMain.handle(API.BACKGROUND_THROTTLE, (e, ...args) =>
+      this.hide.call(this, ...args),
+    );
   }
   setMainWindow(mainWindow) {
     this.mainWindow = mainWindow;
@@ -48,6 +60,22 @@ class IpcApi {
       url: url,
     });
     return app;
+  }
+  async openExternal(url) {
+    await shell.openExternal(url);
+  }
+  hide(webcontentsId, shouldHide) {
+    const contents = webContents.fromId(webcontentsId);
+    console.log(webcontentsId, shouldHide, contents.mainFrame.visibilityState);
+    if (shouldHide) {
+      contents.mainFrame.executeJavaScript('document.visibilityState="hidden"');
+    } else {
+      contents.mainFrame.executeJavaScript(
+        'document.visibilityState="visible"',
+      );
+      //contents.emit("GUEST_INSTANCE_VISIBILITY_CHANGE", "visible");
+      //contents.visibilityState = "visible";
+    }
   }
   // TODO: remove? might be obsolete, though popups?
   showApplication({ envId, id }) {
